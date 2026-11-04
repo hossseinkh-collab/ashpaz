@@ -1,0 +1,84 @@
+name: Build Android APK (Offline Standalone)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Standalone APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Frontend Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Sync Web Assets into Native Android Assets
+        run: npx cap sync android
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build Standalone Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Rename and Prepare APK Artifact
+        run: |
+          mkdir -p output
+          cp android/app/build/outputs/apk/debug/app-debug.apk output/SmartChef-Standalone.apk
+          ls -lh output/
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartChef-Standalone-APK
+          path: output/SmartChef-Standalone.apk
+          retention-days: 30
+
+      - name: Release APK (GitHub Releases)
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0-${{ github.run_number }}
+          name: "نسخه نصبی آفلاین سرآشپز هوشمند v1.0.${{ github.run_number }}"
+          body: |
+            ## 📱 اپلیکیشن اندروید سرآشپز هوشمند (نسخه کاملاً آفلاین و مستقل)
+            
+            این نسخه به‌صورت کاملاً مستقل و بومی (Native Standalone) ساخته شده است:
+            - **بدون نیاز به لینک آنلاین یا سرور گوگل استودیو**: تمام تصاویر، پایگاه داده ۳۷۴ دستور غذا، استودیوی قنادی، محاسبه‌گرها و برنامه‌ریزی غذایی داخل خود فایل APK بسته‌بندی شده‌اند.
+            - **کارکرد ۱۰۰٪ آفلاین**: برنامه در هر شرایطی بدون اینترنت باز و اجرا می‌شود.
+            - **اتصال به هوش مصنوعی**: تنها در صورت تمایل به چت و گفتگوی هوشمند با سرآشپز نیاز به اتصال به اینترنت خواهد بود.
+            
+            ### 📥 دانلود:
+            فایل `SmartChef-Standalone.apk` را از بخش Assets در پایین همین صفحه دانلود کرده و روی گوشی اندروید خود نصب فرمایید.
+          files: output/SmartChef-Standalone.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
