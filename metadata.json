@@ -1,0 +1,6 @@
+{
+  "name": "سرآشپز هوشمند",
+  "description": "اپلیکیشن جامع و هوشمند آشپزی ایرانی، فست‌فود، قنادی، کیک‌پزی و برنامه‌ریزی غذایی نسخه اندروید",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
