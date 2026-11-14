@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.MealPlanSlot
 import com.example.data.Recipe
+import com.example.ui.components.FridgeMealPosterDialog
 import com.example.ui.theme.*
 
 @Composable
@@ -76,6 +77,16 @@ fun MealPlannerScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = Slate400
                         )
+                    }
+
+                    FilledTonalButton(
+                        onClick = { showPosterModal = true },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = Saffron500.copy(alpha = 0.2f))
+                    ) {
+                        Icon(imageVector = Icons.Default.Kitchen, contentDescription = null, tint = Saffron400, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("پوستر یخچال", style = MaterialTheme.typography.labelSmall, color = Saffron400, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -188,6 +199,15 @@ fun MealPlannerScreen(
                 }
             }
         }
+    }
+
+    if (showPosterModal) {
+        FridgeMealPosterDialog(
+            mealSlots = mealSlots,
+            recipes = recipes,
+            onAddWeeklyToShoppingList = onAddWeeklyToShoppingList,
+            onDismiss = { showPosterModal = false }
+        )
     }
 }
 

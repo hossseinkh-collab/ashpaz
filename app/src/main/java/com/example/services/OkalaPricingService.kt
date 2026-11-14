@@ -202,4 +202,8 @@ object OkalaPricingService {
             okalaSearchUrl = searchUrl
         )
     }
+
+    fun generateOkalaSearchUrl(name: String): String {
+        return "https://okala.com/search?q=" + URLEncoder.encode(name.trim(), "UTF-8")
+    }
 }

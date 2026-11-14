@@ -58,6 +58,8 @@ fun SmartChefApp() {
     var showDedicationDialog by remember { mutableStateOf(false) }
     var showShoppingDialog by remember { mutableStateOf(false) }
     var showAuditDialog by remember { mutableStateOf(false) }
+    var showCoverageDialog by remember { mutableStateOf(false) }
+    var selectedProvinceQuery by remember { mutableStateOf("") }
 
     // Shopping List state
     var shoppingItems by remember { mutableStateOf<List<ShoppingItem>>(emptyList()) }
@@ -149,6 +151,7 @@ fun SmartChefApp() {
             AppHeader(
                 shoppingCount = shoppingItems.count { !it.isPurchased },
                 onOpenShopping = { showShoppingDialog = true },
+                onOpenCoverage = { showCoverageDialog = true },
                 onOpenAudit = { showAuditDialog = true },
                 onOpenDedication = { showDedicationDialog = true }
             )
@@ -172,7 +175,9 @@ fun SmartChefApp() {
                 "recipes" -> {
                     RecipesScreen(
                         recipes = recipes,
-                        onRecipeClick = { activeRecipe = it }
+                        onRecipeClick = { activeRecipe = it },
+                        externalSearchQuery = selectedProvinceQuery,
+                        onClearExternalSearch = { selectedProvinceQuery = "" }
                     )
                 }
                 "pastry" -> {
@@ -202,7 +207,21 @@ fun SmartChefApp() {
                 "fridge" -> {
                     FridgeChefScreen(
                         recipes = recipes,
-                        onRecipeClick = { activeRecipe = it }
+                        substitutions = substitutions,
+                        onRecipeClick = { activeRecipe = it },
+                        onAddIngredientToShopping = { name ->
+                            val newItem = ShoppingItem(
+                                id = "shop-${System.currentTimeMillis()}-${shoppingItems.size}",
+                                name = name,
+                                neededAmount = 1.0,
+                                unit = "بسته",
+                                category = "یخچال و انبار",
+                                estimatedPriceToman = 45000L,
+                                okalaSearchUrl = OkalaPricingService.generateOkalaSearchUrl(name)
+                            )
+                            shoppingItems = shoppingItems + newItem
+                            showShoppingDialog = true
+                        }
                     )
                 }
                 "assistant" -> {
@@ -230,6 +249,17 @@ fun SmartChefApp() {
             },
             onClearAll = { shoppingItems = emptyList() },
             onDismiss = { showShoppingDialog = false }
+        )
+    }
+
+    if (showCoverageDialog) {
+        EncyclopediaCoverageDialog(
+            recipes = recipes,
+            onSelectProvince = { provinceName ->
+                selectedProvinceQuery = provinceName
+                currentTab = "recipes"
+            },
+            onDismiss = { showCoverageDialog = false }
         )
     }
 

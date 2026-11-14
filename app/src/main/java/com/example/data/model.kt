@@ -129,3 +129,25 @@ data class TestResult(
     val executionTimeMs: Long,
     val details: String
 )
+
+data class FamilyMemberProfile(
+    val id: String,
+    val name: String,
+    val relationFa: String, // خودم، همسر، فرزند، مادر، پدر، دوست
+    val gender: String = "male", // "male", "female"
+    val age: Int = 30,
+    val heightCm: Int = 175,
+    val weightKg: Double = 75.0,
+    val targetWeightKg: Double = 70.0,
+    val activityLevel: String = "moderate", // "sedentary", "light", "moderate", "active", "very_active"
+    val goal: String = "weight_loss", // "weight_loss", "maintenance", "muscle_gain"
+    val targetWeeks: Int = 8
+)
+
+data class ProvinceCoverage(
+    val nameFa: String,
+    val centerFa: String,
+    val dishCount: Int,
+    val sampleDishes: List<String>
+)
+

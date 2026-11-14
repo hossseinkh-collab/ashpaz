@@ -51,10 +51,20 @@ val RECIPE_CATEGORIES = listOf(
 fun RecipesScreen(
     recipes: List<Recipe>,
     onRecipeClick: (Recipe) -> Unit,
+    externalSearchQuery: String = "",
+    onClearExternalSearch: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("all") }
+
+    LaunchedEffect(externalSearchQuery) {
+        if (externalSearchQuery.isNotBlank()) {
+            searchQuery = externalSearchQuery
+            selectedCategory = "all"
+            onClearExternalSearch()
+        }
+    }
 
     val filteredRecipes = remember(recipes, searchQuery, selectedCategory) {
         recipes.filter { recipe ->
@@ -66,6 +76,8 @@ fun RecipesScreen(
                 recipe.title.lowercase().contains(q) ||
                         (recipe.persianSubtitle?.lowercase()?.contains(q) ?: false) ||
                         recipe.originRegion.lowercase().contains(q) ||
+                        (recipe.originProvince?.lowercase()?.contains(q) ?: false) ||
+                        recipe.description.lowercase().contains(q) ||
                         recipe.ingredients.any { it.name.lowercase().contains(q) }
             }
             matchesCategory && matchesSearch

@@ -40,6 +40,7 @@ val NAV_TABS = listOf(
 fun AppHeader(
     shoppingCount: Int,
     onOpenShopping: () -> Unit,
+    onOpenCoverage: () -> Unit = {},
     onOpenAudit: () -> Unit,
     onOpenDedication: () -> Unit
 ) {
@@ -104,6 +105,15 @@ fun AppHeader(
                             tint = if (shoppingCount > 0) Saffron400 else Slate400
                         )
                     }
+                }
+
+                // 31 Provinces Encyclopedia Coverage
+                IconButton(onClick = onOpenCoverage) {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = "دانشنامه ۳۱ استان ایران",
+                        tint = Saffron400
+                    )
                 }
 
                 // Specification audit

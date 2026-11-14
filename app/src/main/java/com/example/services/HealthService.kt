@@ -141,4 +141,77 @@ object HealthService {
             )
         }
     }
+
+    fun getDefaultFamilyMembers(): List<com.example.data.FamilyMemberProfile> {
+        return listOf(
+            com.example.data.FamilyMemberProfile(id = "mem-1", name = "خودم", relationFa = "خودم", gender = "male", age = 30, heightCm = 178, weightKg = 79.5, targetWeightKg = 72.0, activityLevel = "moderate", goal = "weight_loss", targetWeeks = 8),
+            com.example.data.FamilyMemberProfile(id = "mem-2", name = "همسر", relationFa = "همسر", gender = "female", age = 28, heightCm = 165, weightKg = 64.0, targetWeightKg = 58.0, activityLevel = "light", goal = "weight_loss", targetWeeks = 10),
+            com.example.data.FamilyMemberProfile(id = "mem-3", name = "فرزند", relationFa = "فرزند", gender = "male", age = 8, heightCm = 128, weightKg = 26.0, targetWeightKg = 26.0, activityLevel = "active", goal = "maintenance", targetWeeks = 4),
+            com.example.data.FamilyMemberProfile(id = "mem-4", name = "مادر", relationFa = "مادر", gender = "female", age = 55, heightCm = 160, weightKg = 76.0, targetWeightKg = 68.0, activityLevel = "light", goal = "weight_loss", targetWeeks = 12),
+            com.example.data.FamilyMemberProfile(id = "mem-5", name = "پدر", relationFa = "پدر", gender = "male", age = 58, heightCm = 172, weightKg = 84.0, targetWeightKg = 75.0, activityLevel = "moderate", goal = "weight_loss", targetWeeks = 12)
+        )
+    }
+
+    fun calculateTrajectory(
+        currentWeight: Double,
+        startWeight: Double,
+        targetWeight: Double,
+        targetWeeks: Int,
+        daysPassed: Int = 14
+    ): TrajectoryPlan {
+        val totalDays = max(7, targetWeeks * 7)
+        val safePassed = max(1, daysPassed)
+        val totalDelta = targetWeight - startWeight
+        val expectedProgressRatio = safePassed.toDouble() / totalDays.toDouble()
+        val expectedToday = startWeight + (totalDelta * expectedProgressRatio)
+        val diff = currentWeight - expectedToday
+
+        val isLoss = targetWeight < startWeight
+        val (status, statusFa) = if (isLoss) {
+            when {
+                currentWeight <= expectedToday - 0.5 -> Pair("ahead", "جلوتر از برنامه 🚀")
+                currentWeight >= expectedToday + 0.5 -> Pair("behind", "عقب‌تر از برنامه ⚠️")
+                else -> Pair("on_track", "روی خط سیر دقیق 🎯")
+            }
+        } else {
+            Pair("on_track", "روی خط سیر دقیق 🎯")
+        }
+
+        val weeklyRate = ((startWeight - targetWeight) / targetWeeks * 10.0).roundToInt() / 10.0
+
+        val (joke, proverb) = if (status == "behind") {
+            Pair(
+                "دیشب یخچال بهت چی کار کرده بود که نصف شب رفتی سراغش؟! نترس، دیگ دست‌نخورده قورمه‌سبزی تا فردا صبح فرار نمی‌کرد!",
+                "ماهی را هر وقت از آب بگیری تازه است؛ رژیم را هر وقت سفت بگیری خوش‌تیپی!"
+            )
+        } else {
+            Pair(
+                "ترازو با لبخند نگاهت کرد و گفت: ایول، دقیقاً داری طبق نقشه پیش میری!",
+                "آب رفته به جوی برنمی‌گردد، ولی چربی رفته با اراده پولادین به باد می‌رود!"
+            )
+        }
+
+        return TrajectoryPlan(
+            status = status,
+            statusFa = statusFa,
+            differenceKg = (diff * 10.0).roundToInt() / 10.0,
+            expectedWeightKg = (expectedToday * 10.0).roundToInt() / 10.0,
+            targetDays = totalDays,
+            weeklyRateKg = weeklyRate,
+            joke = joke,
+            proverb = proverb
+        )
+    }
 }
+
+data class TrajectoryPlan(
+    val status: String, // "ahead", "on_track", "behind"
+    val statusFa: String,
+    val differenceKg: Double,
+    val expectedWeightKg: Double,
+    val targetDays: Int,
+    val weeklyRateKg: Double,
+    val joke: String,
+    val proverb: String
+)
+
